@@ -2,14 +2,16 @@
 
 SwiftVPN 是一个面向个人自建服务器的 Android VPN 客户端项目，默认使用**简体中文**。
 
-> **当前状态：** Android 中文界面骨架和项目配置已开始搭建。VPN 隧道、配置接口和 Linux 网关仍在开发中，当前版本不能提供真实 VPN 连接。
+> **当前状态：** 已有中文 Android 界面、VPN 系统授权流程和 VpnService 服务入口。WireGuard 隧道、服务器配置接口和 Linux 网关仍在开发中，当前版本尚不能提供真实 VPN 连接。
 
 ## 当前功能
 
 - Kotlin + Jetpack Compose Android 项目骨架
 - 简体中文首页和连接状态展示
 - Android 最低版本：Android 8.0（API 26）
-- 应用版本：0.1.0（开发预览）
+- Android VPN 系统授权申请与结果提示
+- VpnService 服务入口（尚未建立数据隧道）
+- 应用版本：0.1.1（开发预览）
 
 ## 计划功能
 
