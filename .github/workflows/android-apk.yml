@@ -23,7 +23,9 @@ jobs:
           java-version: '17'
 
       - name: 安装 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
 
       - name: 安装 Gradle
         uses: gradle/actions/setup-gradle@v4
