@@ -1,8 +1,11 @@
 package com.swiftvpn.app
 
+import android.content.Intent
+import android.net.VpnService
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,25 +19,57 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
+    private var statusText by mutableStateOf("尚未连接")
+    private var detailText by mutableStateOf("点击下方按钮申请 Android VPN 系统授权。")
+
+    private val vpnPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                statusText = "系统授权已通过"
+                detailText = "已获得 VPN 使用授权。WireGuard 隧道和服务器配置尚未接入，因此目前还没有建立 VPN 连接。"
+            } else {
+                statusText = "尚未获得授权"
+                detailText = "你可以稍后再次点击按钮，并在系统弹窗中允许 SwiftVPN 创建 VPN 连接。"
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                SwiftVpnHome()
+                SwiftVpnHome(
+                    status = statusText,
+                    detail = detailText,
+                    onRequestPermission = ::requestVpnPermission
+                )
             }
+        }
+    }
+
+    private fun requestVpnPermission() {
+        val intent = VpnService.prepare(this)
+        if (intent == null) {
+            statusText = "系统授权已通过"
+            detailText = "已获得 VPN 使用授权。WireGuard 隧道和服务器配置尚未接入，因此目前还没有建立 VPN 连接。"
+        } else {
+            vpnPermissionLauncher.launch(intent)
         }
     }
 }
 
 @Composable
-private fun SwiftVpnHome() {
+private fun SwiftVpnHome(
+    status: String,
+    detail: String,
+    onRequestPermission: () -> Unit
+) {
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -61,29 +96,24 @@ private fun SwiftVpnHome() {
                 )
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
-                        text = "当前状态",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    Text("当前状态", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "尚未连接",
+                        text = status,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "连接功能正在开发中。完成服务器配置和 WireGuard 接入后即可连接。"
-                    )
+                    Text(detail)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = {}, enabled = false) {
-                Text("连接功能开发中")
+            Button(onClick = onRequestPermission) {
+                Text("申请 VPN 系统授权")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "版本 0.1.0 · 中文预览版",
+                text = "版本 0.1.1 · 中文开发预览版",
                 style = MaterialTheme.typography.bodySmall
             )
         }
